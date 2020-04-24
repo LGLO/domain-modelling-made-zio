@@ -6,6 +6,18 @@ import ordertaking.services.Letters
 import ordertaking.services.Letters._
 import zio._
 import zio.console.Console
+import sttp.client.asynchttpclient.zio.SttpClient
+import sttp.client.SttpBackend
+import sttp.client.asynchttpclient.WebSocketHandler
+import sttp.model.Uri
+import java.{util => ju}
+import io.circe.generic.auto._
+import io.circe.Encoder
+import io.circe.syntax._
+import sttp.client._
+import sttp.client.circe._
+import java.nio.charset.StandardCharsets
+import zio.logging._
 
 object AcknowledgeSender {
   type AcknowledgeSender = Has[Service]
@@ -27,7 +39,7 @@ object AcknowledgeSender {
 
   //createAcknowledgmentLetter: PricedOrder => HtmlString,
   trait Service {
-    def sendAcknowledgment(pricedOrder: PricedOrder): UIO[SendResult]
+    def sendAcknowledgment(pricedOrder: PricedOrder): ZIO[Logging, Nothing, SendResult]
   }
 
   val dummy: ZLayer[Any, Nothing, Has[Service]] = ZLayer.succeed {
@@ -48,7 +60,44 @@ object AcknowledgeSender {
     }
   }
 
-  def sendAcknowledgment(pricedOrder: PricedOrder): ZIO[Has[Service], Nothing, SendResult] =
+  //val live: ZLayer[Console with Letters with SttpClient, Nothing, Has[Service]] =
+  //  ZLayer.fromService((backend: SttpBackend[Task, Nothing, WebSocketHandler]))
+
+  def sendAcknowledgment(pricedOrder: PricedOrder): ZIO[Has[Service] with Logging, Nothing, SendResult] =
     ZIO.accessM(_.get.sendAcknowledgment(pricedOrder))
 
+  case class AcknowledgeSenderConfig(uri: Uri)
+
+  private case class AcknowledgeDto(html: String)
+  private case class AcknowledgeSenderLive(
+      config: AcknowledgeSenderConfig,
+      backend: SttpBackend[Task, Nothing, WebSocketHandler],
+      letters: Letters.Service
+  ) extends Service {
+
+    private def makeEmail(html: String) = {
+      val encodedBytes = ju.Base64.getEncoder().encode(html.getBytes(StandardCharsets.UTF_8))
+      val bytesAsString = new String(encodedBytes, StandardCharsets.US_ASCII)
+      AcknowledgeDto(bytesAsString)
+    }
+
+    def sendAcknowledgment(pricedOrder: PricedOrder): ZIO[Logging, Nothing, SendResult] = {
+      val letter = letters.acknowledgeLetter(pricedOrder)
+      val request = basicRequest.body(makeEmail(letter.value)).post(config.uri)
+      backend
+        .send(request)
+        .foldM(
+          th =>
+            log.error(s"Failed to send ${pricedOrder.orderId} acknowledgement", Cause.fail(th)) *>
+              ZIO.succeed(NotSent),
+          response =>
+            if (response.code.isSuccess)
+              ZIO.succeed(Sent)
+            else
+              log.error(
+                s"Failed to send ${pricedOrder.orderId} acknowledgement, result code: ${response.code}, message: ${response.body}"
+              ) *> ZIO.succeed(NotSent)
+        )
+    }
+  }
 }

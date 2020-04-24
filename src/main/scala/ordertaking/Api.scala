@@ -14,10 +14,11 @@ import zio.interop.catz._
 import ordertaking.services.AcknowledgeSender._
 import ordertaking.services.AddressValidator._
 import ordertaking.services.ProductCatalog._
+import zio.logging.Logging
 
 object Api {
 
-  type Dependencies = ZEnv with AcknowledgeSender with ProductCatalog with AddressValidator
+  type Dependencies = ZEnv with AcknowledgeSender with ProductCatalog with AddressValidator with Logging
 
   implicit val encodePlaceOrderEvent: Encoder[PlaceOrderEventDto] =
     Encoder.instance {

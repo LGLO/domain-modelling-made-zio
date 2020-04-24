@@ -9,6 +9,7 @@ import ordertaking.services.AddressValidator._
 import ordertaking.services.ProductCatalog._
 
 import zio.ZIO
+import zio.logging.Logging
 
 object Implementation {
 
@@ -208,7 +209,9 @@ object Implementation {
 // AcknowledgeOrder step
 // ---------------------------
 
-  def acknowledgeOrder(pricedOrder: PricedOrder): ZIO[AcknowledgeSender, Nothing, Option[OrderAcknowledgmentSent]] = {
+  def acknowledgeOrder(
+      pricedOrder: PricedOrder
+  ): ZIO[AcknowledgeSender with Logging, Nothing, Option[OrderAcknowledgmentSent]] = {
     // if the acknowledgement was successfully sent,
     // return the corresponding event, else return None
     AcknowledgeSender.sendAcknowledgment(pricedOrder).map {
@@ -262,7 +265,9 @@ object Implementation {
 
   def placeOrder(
       unvalidatedOrder: UnvalidatedOrder
-  ): ZIO[ProductCatalog with AddressValidator with AcknowledgeSender, PlaceOrderError, List[PlaceOrderEvent]] =
+  ): ZIO[ProductCatalog with AddressValidator with AcknowledgeSender with Logging, PlaceOrderError, List[
+    PlaceOrderEvent
+  ]] =
     for {
       validatedOrder <- validateOrder(unvalidatedOrder)
       pricedOrder <- priceOrder(validatedOrder)

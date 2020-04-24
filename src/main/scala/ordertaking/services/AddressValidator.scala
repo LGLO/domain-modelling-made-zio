@@ -30,34 +30,38 @@ object AddressValidator {
     def checkAddress(unvalidatedAddress: UnvalidatedAddress): IO[AddressValidationError, CheckedAddress]
   }
 
-  val dummy: ZLayer[Any, Nothing, Has[Service]] = ZLayer.succeed {
-    new Service {
-      def checkAddress(unvalidatedAddress: UnvalidatedAddress): IO[AddressValidationError, CheckedAddress] =
-        IO.succeed(CheckedAddress(unvalidatedAddress))
+  val dummy: ZLayer[Any, Nothing, Has[Service]] =
+    ZLayer.succeed {
+      new Service {
+        def checkAddress(unvalidatedAddress: UnvalidatedAddress): IO[AddressValidationError, CheckedAddress] =
+          IO.succeed(CheckedAddress(unvalidatedAddress))
+      }
     }
-  }
+
+  val live: ZLayer[Has[Config] with SttpClient, Nothing, AddressValidator] =
+    ZLayer.fromServices[Config, SttpBackend[Task, Nothing, WebSocketHandler], Service] { (c, backend) =>
+      AddressValidatorLive(c, backend)
+    }
 
   /** clientId and secret are not used for simplicity */
   case class Config(uri: Uri, clientId: String, secret: String)
 
-  def checkAddress(
-      unvalidatedAddress: UnvalidatedAddress
-  ): ZIO[Has[Service], AddressValidationError, CheckedAddress] =
-    ZIO.accessM(_.get.checkAddress(unvalidatedAddress))
+  def checkAddress(address: UnvalidatedAddress): ZIO[Has[Service], AddressValidationError, CheckedAddress] =
+    ZIO.accessM(_.get.checkAddress(address))
 
 }
 
 case class AddressValidatorLive(config: AddressValidator.Config, backend: SttpBackend[Task, Nothing, WebSocketHandler])
     extends AddressValidator.Service
     with StatusCodes {
-  override def checkAddress(unvalidatedAddress: UnvalidatedAddress): IO[AddressValidationError, CheckedAddress] = {
+  override def checkAddress(address: UnvalidatedAddress): IO[AddressValidationError, CheckedAddress] = {
     val addressDto: AddressDto = AddressDto(
-      unvalidatedAddress.addressLine1,
-      unvalidatedAddress.addressLine2,
-      unvalidatedAddress.addressLine3,
-      unvalidatedAddress.addressLine4,
-      unvalidatedAddress.city,
-      unvalidatedAddress.zipCode
+      address.addressLine1,
+      address.addressLine2,
+      address.addressLine3,
+      address.addressLine4,
+      address.city,
+      address.zipCode
     )
     val request = basicRequest.post(config.uri).body(addressDto)
 
@@ -65,7 +69,7 @@ case class AddressValidatorLive(config: AddressValidator.Config, backend: SttpBa
       .send(request)
       .orDie
       .flatMap { response =>
-        if (response.code.isSuccess) ZIO.succeed(CheckedAddress(unvalidatedAddress))
+        if (response.code.isSuccess) ZIO.succeed(CheckedAddress(address))
         else if (response.code == NotFound) ZIO.fail(AddressNotFound)
         else ZIO.fail(InvalidFormat)
       }
