@@ -4,6 +4,7 @@ import ordertaking.PublicTypes.PricedOrder
 import zio._
 
 object Letters {
+  type Letters = Has[Service]
 
   case class HtmlString(value: String) extends AnyVal
 

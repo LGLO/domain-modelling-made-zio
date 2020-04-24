@@ -2,13 +2,13 @@ package ordertaking.services
 
 import ordertaking.Types.EmailAddress
 import ordertaking.PublicTypes.PricedOrder
-import ordertaking.Layers.Letters
 import ordertaking.services.Letters
-import ordertaking.services.Letters.HtmlString
+import ordertaking.services.Letters._
 import zio._
 import zio.console.Console
 
 object AcknowledgeSender {
+  type AcknowledgeSender = Has[Service]
 
   case class OrderAcknowledgment(
       emailAddress: EmailAddress,

@@ -28,6 +28,8 @@ lazy val root = (project in file("."))
       "org.http4s" %% "http4s-blaze-client" % Http4sVersion,
       "org.http4s" %% "http4s-circe" % Http4sVersion,
       "org.http4s" %% "http4s-dsl" % Http4sVersion,
+      "com.softwaremill.sttp.client" %% "circe" % "2.1.0-RC1",
+      "com.softwaremill.sttp.client" %% "async-http-client-backend-zio" % "2.1.0-RC1",
       "dev.zio" %% "zio" % ZioVersion,
       "dev.zio" %% "zio-interop-cats" % "2.0.0.0-RC12",
       "io.circe" %% "circe-generic" % CirceVersion,

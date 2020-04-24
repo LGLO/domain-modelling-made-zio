@@ -3,9 +3,10 @@ package ordertaking
 import ordertaking._
 import Types._
 import PublicTypes._
-import Layers._
 import ordertaking.services.{AcknowledgeSender, AddressValidator, ProductCatalog}
+import ordertaking.services.AcknowledgeSender._
 import ordertaking.services.AddressValidator._
+import ordertaking.services.ProductCatalog._
 
 import zio.ZIO
 

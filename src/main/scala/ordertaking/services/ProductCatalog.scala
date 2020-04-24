@@ -6,6 +6,7 @@ import ordertaking.Types.Price
 import scala.io.Source
 
 object ProductCatalog {
+  type ProductCatalog = Has[Service]
 
   trait Service {
     def checkProductExists(pc: ProductCode): Boolean
