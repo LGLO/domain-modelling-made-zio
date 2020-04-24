@@ -1,13 +1,12 @@
 package ordertaking
 
-import ordertaking._
-import Types._
 import PublicTypes._
-import ordertaking.services.{AcknowledgeSender, AddressValidator, ProductCatalog}
+import Types._
+import ordertaking._
 import ordertaking.services.AcknowledgeSender._
 import ordertaking.services.AddressValidator._
 import ordertaking.services.ProductCatalog._
-
+import ordertaking.services.{AcknowledgeSender, AddressValidator, ProductCatalog}
 import zio.ZIO
 import zio.logging.Logging
 

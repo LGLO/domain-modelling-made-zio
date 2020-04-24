@@ -1,8 +1,9 @@
 package ordertaking.services
 
-import zio._
-import ordertaking.Types.ProductCode
 import ordertaking.Types.Price
+import ordertaking.Types.ProductCode
+import zio._
+
 import scala.io.Source
 
 object ProductCatalog {

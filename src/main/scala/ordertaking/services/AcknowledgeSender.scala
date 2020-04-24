@@ -1,22 +1,20 @@
 package ordertaking.services
 
-import ordertaking.Types.EmailAddress
+import java.nio.charset.StandardCharsets
+import java.{util => ju}
+
+import io.circe.generic.auto._
 import ordertaking.PublicTypes.PricedOrder
+import ordertaking.Types.EmailAddress
 import ordertaking.services.Letters
 import ordertaking.services.Letters._
+import sttp.client.SttpBackend
+import sttp.client._
+import sttp.client.asynchttpclient.WebSocketHandler
+import sttp.client.circe._
+import sttp.model.Uri
 import zio._
 import zio.console.Console
-import sttp.client.asynchttpclient.zio.SttpClient
-import sttp.client.SttpBackend
-import sttp.client.asynchttpclient.WebSocketHandler
-import sttp.model.Uri
-import java.{util => ju}
-import io.circe.generic.auto._
-import io.circe.Encoder
-import io.circe.syntax._
-import sttp.client._
-import sttp.client.circe._
-import java.nio.charset.StandardCharsets
 import zio.logging._
 
 object AcknowledgeSender {

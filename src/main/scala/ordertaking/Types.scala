@@ -1,7 +1,8 @@
 package ordertaking
 
-import scala.util.matching.Regex
 import ordertaking._
+
+import scala.util.matching.Regex
 
 object Types {
 // ===============================

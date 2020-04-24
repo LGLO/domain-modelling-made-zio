@@ -4,6 +4,8 @@ version := "0.0.1"
 // scalaVersion := "0.23.0-RC1"
 scalaVersion in ThisBuild := "2.13.1"
 
+addCommandAlias("fix", "; all compile:scalafix test:scalafix")
+
 scalafmtOnCompile := true
 
 val ZioVersion = "1.0.0-RC18-2"
@@ -43,6 +45,9 @@ lazy val root = (project in file("."))
     addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3")
   )
 
+
+scalafixDependencies in ThisBuild+= "com.nequissimus" %% "sort-imports" % "0.3.0"
+
 scalacOptions ++= Seq(
   "-deprecation",
   "-encoding",
@@ -50,6 +55,6 @@ scalacOptions ++= Seq(
   "-language:higherKinds",
   "-language:postfixOps",
   "-feature",
-  //"-Wunused",
+  "-Wunused",
   "-Xfatal-warnings"
 )

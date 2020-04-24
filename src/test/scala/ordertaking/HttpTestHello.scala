@@ -1,10 +1,10 @@
 package ordertaking
 
 import org.http4s._
+import org.http4s.implicits._
 import zio.Task
 import zio.test.Assertion.equalTo
 import zio.test.{DefaultRunnableSpec, assertM, suite, testM}
-import org.http4s.implicits._
 
 object HttpTestHello extends DefaultRunnableSpec {
 

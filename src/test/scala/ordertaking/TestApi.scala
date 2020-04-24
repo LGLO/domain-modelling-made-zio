@@ -1,12 +1,12 @@
 package ordertaking
 
+import TestAspect._
 import org.http4s._
 import org.http4s.implicits._
 import zio._
 import zio.interop.catz._
-import zio.test._
 import zio.test.Assertion._
-import TestAspect._
+import zio.test._
 
 object IgnoreMe
 /*object TestApiService extends DefaultRunnableSpec {

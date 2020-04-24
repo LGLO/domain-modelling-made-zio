@@ -1,9 +1,10 @@
 package ordertaking.infra
 
-import sttp.client.asynchttpclient.zio.SttpClient
-import sttp.client.asynchttpclient.zio.AsyncHttpClientZioBackend
-import zio._
 import sttp.client.SttpBackendOptions
+import sttp.client.asynchttpclient.zio.AsyncHttpClientZioBackend
+import sttp.client.asynchttpclient.zio.SttpClient
+import zio._
+
 import scala.concurrent.duration.FiniteDuration
 
 object SttpZioClient {

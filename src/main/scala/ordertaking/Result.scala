@@ -1,6 +1,7 @@
 package ordertaking
 
 import zio.IO
+
 import scala.annotation.tailrec
 
 sealed trait Result[+E, +T] {

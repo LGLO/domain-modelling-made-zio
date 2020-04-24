@@ -1,14 +1,14 @@
 package ordertaking
 
-import org.http4s.client.blaze.BlazeClientBuilder
-import org.http4s.client.Client
 import ordertaking.HttpClient.HttpClient
 import ordertaking.HttpClient.WrappedClient
-import zio.{Task, ZIO, ZLayer, ZManaged}
-import zio.test._
-import zio.test.TestResult
-import zio.interop.catz._
+import org.http4s.client.Client
+import org.http4s.client.blaze.BlazeClientBuilder
 import zio.interop.catz
+import zio.interop.catz._
+import zio.test.TestResult
+import zio.test._
+import zio.{Task, ZIO, ZLayer, ZManaged}
 
 object ClientTest {
 

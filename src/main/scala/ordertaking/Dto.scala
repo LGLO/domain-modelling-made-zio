@@ -1,8 +1,8 @@
 package ordertaking
 
-import ordertaking._
-import Types._
 import PublicTypes._
+import Types._
+import ordertaking._
 
 object Dto {
 

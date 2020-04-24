@@ -1,20 +1,17 @@
 package ordertaking.services
 
+import AddressValidator._
+import io.circe.generic.auto._
 import ordertaking.Dto.AddressDto
 import ordertaking.PublicTypes._
-import zio._
-import ordertaking.PublicTypes
-import sttp.client.asynchttpclient.zio._
-import io.circe.generic.auto._
-import io.circe.Encoder
-import io.circe.syntax._
 import sttp.client._
-import sttp.client.circe._
-import sttp.model.Uri
-import sttp.client.asynchttpclient.zio.SttpClient
 import sttp.client.asynchttpclient.WebSocketHandler
-import AddressValidator._
+import sttp.client.asynchttpclient.zio.SttpClient
+import sttp.client.asynchttpclient.zio._
+import sttp.client.circe._
 import sttp.model.StatusCodes
+import sttp.model.Uri
+import zio._
 
 object AddressValidator {
 

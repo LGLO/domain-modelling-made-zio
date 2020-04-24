@@ -1,7 +1,8 @@
 package ordertaking
 
-import Types._
 import java.net.URI
+
+import Types._
 import zio.IO
 
 object PublicTypes {

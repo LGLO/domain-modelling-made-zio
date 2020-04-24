@@ -4,7 +4,6 @@ import org.http4s.server.blaze._
 import zio._
 import zio.interop.catz._
 import zio.interop.catz.implicits._
-
 import zio.logging._
 
 object Main extends zio.App {
