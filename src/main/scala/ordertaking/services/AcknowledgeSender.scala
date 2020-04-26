@@ -1,5 +1,6 @@
 package ordertaking.services
 
+import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.{util => ju}
 
@@ -11,13 +12,12 @@ import ordertaking.services.Letters._
 import sttp.client.SttpBackend
 import sttp.client._
 import sttp.client.asynchttpclient.WebSocketHandler
+import sttp.client.asynchttpclient.zio.SttpClient
 import sttp.client.circe._
 import sttp.model.Uri
 import zio._
 import zio.console.Console
 import zio.logging._
-import java.net.URI
-import sttp.client.asynchttpclient.zio.SttpClient
 
 object AcknowledgeSender {
   type AcknowledgeSender = Has[Service]
