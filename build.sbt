@@ -26,21 +26,24 @@ lazy val root = (project in file("."))
     exportJars := true,
     updateOptions := updateOptions.value.withCachedResolution(true),
     libraryDependencies ++= Seq(
-      "org.http4s" %% "http4s-blaze-server" % Http4sVersion,
-      "org.http4s" %% "http4s-blaze-client" % Http4sVersion,
-      "org.http4s" %% "http4s-circe" % Http4sVersion,
-      "org.http4s" %% "http4s-dsl" % Http4sVersion,
+      "ch.qos.logback" % "logback-classic" % LogbackVersion,
       "com.softwaremill.sttp.client" %% "circe" % "2.1.0-RC1",
       "com.softwaremill.sttp.client" %% "async-http-client-backend-zio" % "2.1.0-RC1",
-      "dev.zio" %% "zio" % ZioVersion,
-      "dev.zio" %% "zio-interop-cats" % "2.0.0.0-RC12",
       "io.circe" %% "circe-generic" % CirceVersion,
+      "org.http4s" %% "http4s-blaze-client" % Http4sVersion,
+      "org.http4s" %% "http4s-blaze-server" % Http4sVersion,
+      "org.http4s" %% "http4s-circe" % Http4sVersion,
+      "org.http4s" %% "http4s-dsl" % Http4sVersion,
       "org.specs2" %% "specs2-core" % Specs2Version % "test",
+      "dev.zio" %% "zio" % ZioVersion,
+      "dev.zio" %% "zio-config" % "1.0.0-RC16-2",
+      "dev.zio" %% "zio-config-magnolia" % "1.0.0-RC16-2",
+      "dev.zio" %% "zio-config-typesafe" % "1.0.0-RC16-2",
+      "dev.zio" %% "zio-interop-cats" % "2.0.0.0-RC12",
       "dev.zio" %% "zio-test" % ZioVersion % "test",
-      "dev.zio" %% "zio-test-sbt" % ZioVersion % "test",
       "dev.zio" %% "zio-logging" % ZioLoggingVersion,
       "dev.zio" %% "zio-logging-slf4j" % ZioLoggingVersion,
-      "ch.qos.logback" % "logback-classic" % LogbackVersion
+      "dev.zio" %% "zio-test-sbt" % ZioVersion % "test"
     ),
     addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3")
   )

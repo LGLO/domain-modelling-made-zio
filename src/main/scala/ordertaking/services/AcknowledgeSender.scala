@@ -16,6 +16,8 @@ import sttp.model.Uri
 import zio._
 import zio.console.Console
 import zio.logging._
+import java.net.URI
+import sttp.client.asynchttpclient.zio.SttpClient
 
 object AcknowledgeSender {
   type AcknowledgeSender = Has[Service]
@@ -58,13 +60,19 @@ object AcknowledgeSender {
     }
   }
 
+  val live: ZLayer[Has[AcknowledgeSenderConfig] with SttpClient with Letters, Nothing, AcknowledgeSender] =
+    ZLayer
+      .fromServices[AcknowledgeSenderConfig, SttpBackend[Task, Nothing, WebSocketHandler], Letters.Service, Service](
+        AcknowledgeSenderLive(_, _, _)
+      )
+
   //val live: ZLayer[Console with Letters with SttpClient, Nothing, Has[Service]] =
   //  ZLayer.fromService((backend: SttpBackend[Task, Nothing, WebSocketHandler]))
 
   def sendAcknowledgment(pricedOrder: PricedOrder): ZIO[Has[Service] with Logging, Nothing, SendResult] =
     ZIO.accessM(_.get.sendAcknowledgment(pricedOrder))
 
-  case class AcknowledgeSenderConfig(uri: Uri)
+  case class AcknowledgeSenderConfig(uri: URI)
 
   private case class AcknowledgeDto(html: String)
   private case class AcknowledgeSenderLive(
@@ -81,7 +89,7 @@ object AcknowledgeSender {
 
     def sendAcknowledgment(pricedOrder: PricedOrder): ZIO[Logging, Nothing, SendResult] = {
       val letter = letters.acknowledgeLetter(pricedOrder)
-      val request = basicRequest.body(makeEmail(letter.value)).post(config.uri)
+      val request = basicRequest.body(makeEmail(letter.value)).post(Uri(config.uri))
       backend
         .send(request)
         .foldM(

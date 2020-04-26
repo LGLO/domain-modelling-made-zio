@@ -9,6 +9,7 @@ import scala.io.Source
 object ProductCatalog {
   type ProductCatalog = Has[Service]
 
+  case class Config(catalogPath: String)
   trait Service {
     def checkProductExists(pc: ProductCode): Boolean
 
@@ -24,10 +25,10 @@ object ProductCatalog {
       }
     }
 
-  val live: ZLayer[ZEnv, Throwable, Has[Service]] = {
+  val live: ZLayer[Has[Config], Throwable, Has[Service]] = {
     def readCatalog(fileName: String): Task[Map[ProductCode, Price]] = ZIO.effect {
       Source
-        .fromInputStream(getClass().getResourceAsStream("/" + fileName))
+        .fromInputStream(getClass().getResourceAsStream(fileName))
         .getLines()
         .map(line => line.split(" "))
         .map {
@@ -40,9 +41,9 @@ object ProductCatalog {
     }
     ZLayer.fromEffect(ZIO.effectSuspend {
       for {
-        path <- zio.system.env("CATALOG_PATH")
-        gizmos <- readCatalog(path.getOrElse("") + "/gizmos")
-        widgets <- readCatalog(path.getOrElse("") + "/widgets")
+        path <- ZIO.access[Has[Config]](_.get.catalogPath)
+        gizmos <- readCatalog(path + "gizmos")
+        widgets <- readCatalog(path + "widgets")
         catalog = gizmos ++ widgets
       } yield new Service {
         def checkProductExists(pc: ProductCode): Boolean = catalog.contains(pc)
@@ -50,6 +51,7 @@ object ProductCatalog {
         def getProductPrice(pc: ProductCode): Price = catalog(pc)
       }
     })
+
   }
 
   def checkProductExists(
