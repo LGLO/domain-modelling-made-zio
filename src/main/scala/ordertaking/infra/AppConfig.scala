@@ -4,9 +4,7 @@ import java.net.URI
 import java.util.concurrent.TimeUnit
 
 import ordertaking.infra.SttpZioClient
-import ordertaking.services.AcknowledgeSender.AcknowledgeSenderConfig
-import ordertaking.services.AddressValidator
-import ordertaking.services.ProductCatalog
+import ordertaking.services._
 import sttp.model.Uri
 import zio.config.magnolia.DeriveConfigDescriptor
 import zio.config.magnolia.DeriveConfigDescriptor.Descriptor
@@ -17,9 +15,10 @@ import scala.concurrent.duration.FiniteDuration
 
 case class AppConfig(
     addresses: AddressValidator.Config,
-    acknowledgeSender: AcknowledgeSenderConfig,
+    acknowledgeSender: AcknowledgeSender.Config,
     http: SttpZioClient.Config,
-    productCatalog: ProductCatalog.Config
+    productCatalog: ProductCatalog.Config,
+    kafka: KafkaEventPublisher.Config
 )
 
 object AppConfig {

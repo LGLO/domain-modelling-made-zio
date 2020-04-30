@@ -6,7 +6,6 @@ import ordertaking.Dto.AddressDto
 import ordertaking.PublicTypes._
 import sttp.client._
 import sttp.client.asynchttpclient.WebSocketHandler
-import sttp.client.asynchttpclient.zio.SttpClient
 import sttp.client.asynchttpclient.zio._
 import sttp.client.circe._
 import sttp.model.StatusCodes

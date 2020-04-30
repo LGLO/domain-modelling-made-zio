@@ -7,18 +7,26 @@ import io.circe.generic.auto._
 import io.circe.syntax._
 import ordertaking.services.AcknowledgeSender._
 import ordertaking.services.AddressValidator._
+import ordertaking.services.KafkaEventPublisher._
 import ordertaking.services.ProductCatalog._
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.implicits._
 import zio._
+import zio.blocking.Blocking
 import zio.interop.catz._
 import zio.logging.Logging
 
 object Api {
 
-  type Dependencies = ZEnv with AcknowledgeSender with ProductCatalog with AddressValidator with Logging
+  type Dependencies = ZEnv
+    with AcknowledgeSender
+    with ProductCatalog
+    with AddressValidator
+    with Logging
+    with KafkaEventPublisher
+    with Blocking
 
   implicit val encodePlaceOrderEvent: Encoder[PlaceOrderEventDto] =
     Encoder.instance {
@@ -51,11 +59,18 @@ object Api {
       events => Ok(events.map(PlaceOrderEventDto.fromDomain))
     )
 
+  def publishToKafka(result: Either[PlaceOrderError, List[PlaceOrderEvent]]): ZIO[Dependencies, Throwable, Unit] =
+    result.fold(
+      _ => ZIO.succeed(()),
+      events => publishEvents(events)
+    )
+
   def placeOrderApi(req: Request[Task]): ZIO[Dependencies, Throwable, Response[Task]] =
     for {
       dto <- req.as[OrderFormDto]
-      reponse <- Implementation.placeOrder(dto.toUnvalidatedOrder).either
-      httpResponse <- workflowResultToHttpReponse(reponse)
+      result <- Implementation.placeOrder(dto.toUnvalidatedOrder).either
+      _ <- publishToKafka(result)
+      httpResponse <- workflowResultToHttpReponse(result)
     } yield httpResponse
 
   def service(deps: Dependencies) =

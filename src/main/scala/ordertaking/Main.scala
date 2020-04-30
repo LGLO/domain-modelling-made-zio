@@ -6,6 +6,7 @@ import ordertaking.services.AcknowledgeSender
 import ordertaking.services.AcknowledgeSender.AcknowledgeSender
 import ordertaking.services.AddressValidator
 import ordertaking.services.AddressValidator.AddressValidator
+import ordertaking.services.KafkaEventPublisher
 import ordertaking.services.Letters
 import ordertaking.services.ProductCatalog
 import org.http4s.server.blaze._
@@ -20,18 +21,18 @@ object Main extends zio.App {
 
   import AppConfig._
 
+  val logging = Logging.console(
+    format = (_, entry) => entry,
+    rootLoggerName = Some("order-taking")
+  )
   val sttp: Layer[Throwable, SttpClient] = cfg.narrow(_.http) >>> SttpZioClient.live
   val addressValidator: Layer[Throwable, AddressValidator] = (cfg.narrow(_.addresses) ++ sttp) >>> AddressValidator.live
   val acknowledgeSender: Layer[Throwable, AcknowledgeSender] =
     (cfg.narrow(_.acknowledgeSender) ++ sttp ++ Letters.dummy) >>> AcknowledgeSender.live
   val productCatalog = (cfg.narrow(_.productCatalog)) >>> ProductCatalog.live
+  val kafkaEventPublisher = (cfg.narrow(_.kafka) ++ logging) >>> KafkaEventPublisher.live
 
-  val logging = Logging.console(
-    format = (_, entry) => entry,
-    rootLoggerName = Some("order-taking")
-  )
-
-  val layers = productCatalog ++ addressValidator ++ acknowledgeSender ++ logging
+  val layers = productCatalog ++ addressValidator ++ acknowledgeSender ++ kafkaEventPublisher ++ logging
 
   val server: ZIO[ZEnv, Throwable, Unit] = ZIO
     .runtime[ZEnv]
@@ -46,7 +47,7 @@ object Main extends zio.App {
             .compile
             .drain
         }
-        .provideLayer(ZEnv.live ++ (ZEnv.live >>> layers))
+        .provideCustomLayer(ZEnv.live >>> layers)
     }
 
   def run(args: List[String]) =

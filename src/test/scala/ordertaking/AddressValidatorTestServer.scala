@@ -1,9 +1,7 @@
 package ordertaking
 
 import Dto.AddressDto
-import io.circe._
 import io.circe.generic.auto._
-import io.circe.syntax._
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
@@ -27,7 +25,7 @@ object AddressValidatorTestServer extends App {
           req
             .as[AddressDto]
             .foldM(
-              error => BadRequest("invalid body"),
+              error => BadRequest(s"invalid body: $error"),
               address =>
                 if (address.zipCode.startsWith("00"))
                   NotFound("Address doesn't exists")

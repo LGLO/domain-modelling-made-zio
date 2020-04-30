@@ -16,7 +16,6 @@ import sttp.client.asynchttpclient.zio.SttpClient
 import sttp.client.circe._
 import sttp.model.Uri
 import zio._
-import zio.console.Console
 import zio.logging._
 
 object AcknowledgeSender {
@@ -50,33 +49,20 @@ object AcknowledgeSender {
     }
   }
 
-  val halfDummy: ZLayer[Console with Letters, Nothing, Has[Service]] = ZLayer.fromFunction { env =>
-    new Service {
-      def sendAcknowledgment(pricedOrder: PricedOrder): UIO[SendResult] = {
-        (zio.console.putStrLn(s"Acknowleding order: ${pricedOrder.orderId}") *>
-          Letters.acknowledgeLetter(pricedOrder) *>
-          UIO.succeed(Sent)).provide(env)
-      }
-    }
-  }
-
-  val live: ZLayer[Has[AcknowledgeSenderConfig] with SttpClient with Letters, Nothing, AcknowledgeSender] =
+  val live: ZLayer[Has[Config] with SttpClient with Letters, Nothing, AcknowledgeSender] =
     ZLayer
-      .fromServices[AcknowledgeSenderConfig, SttpBackend[Task, Nothing, WebSocketHandler], Letters.Service, Service](
+      .fromServices[Config, SttpBackend[Task, Nothing, WebSocketHandler], Letters.Service, Service](
         AcknowledgeSenderLive(_, _, _)
       )
-
-  //val live: ZLayer[Console with Letters with SttpClient, Nothing, Has[Service]] =
-  //  ZLayer.fromService((backend: SttpBackend[Task, Nothing, WebSocketHandler]))
 
   def sendAcknowledgment(pricedOrder: PricedOrder): ZIO[Has[Service] with Logging, Nothing, SendResult] =
     ZIO.accessM(_.get.sendAcknowledgment(pricedOrder))
 
-  case class AcknowledgeSenderConfig(uri: URI)
+  case class Config(uri: URI)
 
   private case class AcknowledgeDto(html: String)
   private case class AcknowledgeSenderLive(
-      config: AcknowledgeSenderConfig,
+      config: Config,
       backend: SttpBackend[Task, Nothing, WebSocketHandler],
       letters: Letters.Service
   ) extends Service {
