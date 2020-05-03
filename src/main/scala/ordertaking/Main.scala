@@ -10,7 +10,7 @@ import ordertaking.services.KafkaEventPublisher
 import ordertaking.services.Letters
 import ordertaking.services.ProductCatalog
 import org.http4s.server.blaze._
-import sttp.client.asynchttpclient.zio.SttpClient
+import sttp.client.SttpBackend
 import zio._
 import zio.config.syntax._
 import zio.interop.catz._
@@ -25,10 +25,10 @@ object Main extends zio.App {
     format = (_, entry) => entry,
     rootLoggerName = Some("order-taking")
   )
-  val sttp: Layer[Throwable, SttpClient] = cfg.narrow(_.http) >>> SttpZioClient.live
+  val sttp: Layer[Throwable, Has[SttpBackend[Task, Nothing, Nothing]]] = cfg.narrow(_.http) >>> SttpZioClient.live
   val addressValidator: Layer[Throwable, AddressValidator] = (cfg.narrow(_.addresses) ++ sttp) >>> AddressValidator.live
   val acknowledgeSender: Layer[Throwable, AcknowledgeSender] =
-    (cfg.narrow(_.acknowledgeSender) ++ sttp ++ Letters.dummy) >>> AcknowledgeSender.live
+    (cfg.narrow(_.acknowledgeSender) ++ sttp ++ Letters.live) >>> AcknowledgeSender.live
   val productCatalog = (cfg.narrow(_.productCatalog)) >>> ProductCatalog.live
   val kafkaEventPublisher = (cfg.narrow(_.kafka) ++ logging) >>> KafkaEventPublisher.live
 

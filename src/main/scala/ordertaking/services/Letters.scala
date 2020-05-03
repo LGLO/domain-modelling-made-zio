@@ -12,7 +12,8 @@ object Letters {
     def acknowledgeLetter(pricedOrder: PricedOrder): HtmlString
   }
 
-  val dummy = ZLayer.succeed {
+  //Yes, I know...
+  val live = ZLayer.succeed {
     new Service {
       def acknowledgeLetter(pricedOrder: PricedOrder): HtmlString =
         HtmlString(s"<p>${pricedOrder.orderId.value}</p>")

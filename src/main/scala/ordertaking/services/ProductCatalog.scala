@@ -42,8 +42,8 @@ object ProductCatalog {
     ZLayer.fromEffect(ZIO.effectSuspend {
       for {
         path <- ZIO.access[Has[Config]](_.get.catalogPath)
-        gizmos <- readCatalog(path + "gizmos")
-        widgets <- readCatalog(path + "widgets")
+        gizmos <- readCatalog(path + "/gizmos")
+        widgets <- readCatalog(path + "/widgets")
         catalog = gizmos ++ widgets
       } yield new Service {
         def checkProductExists(pc: ProductCode): Boolean = catalog.contains(pc)

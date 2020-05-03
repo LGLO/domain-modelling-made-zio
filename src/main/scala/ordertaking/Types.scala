@@ -103,18 +103,18 @@ object Types {
     // Return Error if input is null, empty, or not matching pattern
     def create(fieldName: String, code: String): Result[String, ProductCode] =
       if (code == null || code.isEmpty())
-        Error(s"$fieldName: Must not be null or empty")
+        Left(s"$fieldName: Must not be null or empty")
       else if (code.startsWith("W"))
         WidgetCode.create(fieldName, code)
       else if (code.startsWith("G"))
         GizmoCode.create(fieldName, code)
       else
-        Error(s"$fieldName: Format not recognized '$code'")
+        Left(s"$fieldName: Format not recognized '$code'")
 
     def unsafeCreate(fieldName: String, code: String): ProductCode =
       create(fieldName, code) match {
-        case Ok(value)    => value
-        case Error(error) => throw new Exception(error)
+        case Right(value) => value
+        case Left(error)  => throw new Exception(error)
       }
   }
 
@@ -213,8 +213,8 @@ object Types {
     // Throw an exception if out of bounds. This should only be used if you know the value is valid.
     def unsafeCreate(v: BigDecimal): Price =
       create(v) match {
-        case Ok(price) => price
-        case Error(msg) =>
+        case Right(price) => price
+        case Left(msg) =>
           throw new Exception(s"Not expecting Price to be out of bounds: $msg")
       }
 
@@ -265,11 +265,11 @@ object Types {
         str: String
     ): Result[String, T] =
       if (str == null || str.isEmpty)
-        Error(s"$fieldName must not be null or empty")
+        Left(s"$fieldName must not be null or empty")
       else if (str.length > maxLen)
-        Error(s"$fieldName must not be more than $maxLen chars")
+        Left(s"$fieldName must not be more than $maxLen chars")
       else
-        Ok(ctor(str))
+        Right(ctor(str))
 
     // Create a optional constrained string using the constructor provided
     // Return None if input is null, empty.
@@ -282,13 +282,13 @@ object Types {
         str: Option[String]
     ): Result[String, Option[T]] = str match {
       case None =>
-        Ok(None)
+        Right(None)
       case Some("") =>
-        Ok(None)
+        Right(None)
       case Some(str) if (str.length > maxLen) =>
-        Error(s"$fieldName must not be more than $maxLen chars")
+        Left(s"$fieldName must not be more than $maxLen chars")
       case Some(str) =>
-        Ok(Some(ctor(str)))
+        Right(Some(ctor(str)))
     }
 
     // Create a constrained integer using the constructor provided
@@ -301,11 +301,11 @@ object Types {
         i: Int
     ): Result[String, T] =
       if (i < minVal)
-        Error(s"$fieldName: Must not be less than $minVal")
+        Left(s"$fieldName: Must not be less than $minVal")
       else if (i > maxVal)
-        Error(s"$fieldName: Must not be greater than $maxVal")
+        Left(s"$fieldName: Must not be greater than $maxVal")
       else
-        Ok(ctor(i))
+        Right(ctor(i))
 
     // Create a constrained decimal using the constructor provided
     // Return Error if input is less than minVal or more than maxVal
@@ -317,11 +317,11 @@ object Types {
         i: BigDecimal
     ): Result[String, T] =
       if (i < minVal)
-        Error(s"$fieldName: Must not be less than $minVal")
+        Left(s"$fieldName: Must not be less than $minVal")
       else if (i > maxVal)
-        Error(s"$fieldName: Must not be greater than $maxVal")
+        Left(s"$fieldName: Must not be greater than $maxVal")
       else
-        Ok(ctor(i))
+        Right(ctor(i))
 
     // Create a constrained string using the constructor provided
     // Return Error if input is null. empty, or does not match the regex pattern
@@ -332,11 +332,11 @@ object Types {
         str: String
     ): Result[String, T] =
       if (str == null || str.isEmpty)
-        Error(s"$fieldName: Must not be null or empty")
+        Left(s"$fieldName: Must not be null or empty")
       else if (pattern.matches(str))
-        Ok(ctor(str))
+        Right(ctor(str))
       else
-        Error(s"$fieldName: '$str' must match the pattern '$pattern'")
+        Left(s"$fieldName: '$str' must match the pattern '$pattern'")
 
   }
 

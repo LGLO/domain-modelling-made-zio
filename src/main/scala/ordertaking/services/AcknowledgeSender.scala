@@ -1,8 +1,6 @@
 package ordertaking.services
 
 import java.net.URI
-import java.nio.charset.StandardCharsets
-import java.{util => ju}
 
 import io.circe.generic.auto._
 import ordertaking.PublicTypes.PricedOrder
@@ -11,8 +9,6 @@ import ordertaking.services.Letters
 import ordertaking.services.Letters._
 import sttp.client.SttpBackend
 import sttp.client._
-import sttp.client.asynchttpclient.WebSocketHandler
-import sttp.client.asynchttpclient.zio.SttpClient
 import sttp.client.circe._
 import sttp.model.Uri
 import zio._
@@ -36,7 +32,6 @@ object AcknowledgeSender {
   case object Sent extends SendResult
   case object NotSent extends SendResult
 
-  //createAcknowledgmentLetter: PricedOrder => HtmlString,
   trait Service {
     def sendAcknowledgment(pricedOrder: PricedOrder): ZIO[Logging, Nothing, SendResult]
   }
@@ -49,9 +44,10 @@ object AcknowledgeSender {
     }
   }
 
-  val live: ZLayer[Has[Config] with SttpClient with Letters, Nothing, AcknowledgeSender] =
+  val live
+      : ZLayer[Has[Config] with Has[SttpBackend[Task, Nothing, NothingT]] with Letters, Nothing, AcknowledgeSender] =
     ZLayer
-      .fromServices[Config, SttpBackend[Task, Nothing, WebSocketHandler], Letters.Service, Service](
+      .fromServices[Config, SttpBackend[Task, Nothing, NothingT], Letters.Service, Service](
         AcknowledgeSenderLive(_, _, _)
       )
 
@@ -63,14 +59,13 @@ object AcknowledgeSender {
   private case class AcknowledgeDto(html: String)
   private case class AcknowledgeSenderLive(
       config: Config,
-      backend: SttpBackend[Task, Nothing, WebSocketHandler],
+      backend: SttpBackend[Task, Nothing, NothingT],
       letters: Letters.Service
   ) extends Service {
 
+    // Escaping `"` is a must but it's not enough
     private def makeEmail(html: String) = {
-      val encodedBytes = ju.Base64.getEncoder().encode(html.getBytes(StandardCharsets.UTF_8))
-      val bytesAsString = new String(encodedBytes, StandardCharsets.US_ASCII)
-      AcknowledgeDto(bytesAsString)
+      AcknowledgeDto(html.replaceAllLiterally("\"", "\\\""))
     }
 
     def sendAcknowledgment(pricedOrder: PricedOrder): ZIO[Logging, Nothing, SendResult] = {

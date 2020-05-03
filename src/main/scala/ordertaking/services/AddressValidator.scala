@@ -5,8 +5,6 @@ import io.circe.generic.auto._
 import ordertaking.Dto.AddressDto
 import ordertaking.PublicTypes._
 import sttp.client._
-import sttp.client.asynchttpclient.WebSocketHandler
-import sttp.client.asynchttpclient.zio._
 import sttp.client.circe._
 import sttp.model.StatusCodes
 import sttp.model.Uri
@@ -34,8 +32,8 @@ object AddressValidator {
       }
     }
 
-  val live: ZLayer[Has[Config] with SttpClient, Nothing, AddressValidator] =
-    ZLayer.fromServices[Config, SttpBackend[Task, Nothing, WebSocketHandler], Service] { (c, backend) =>
+  val live: ZLayer[Has[Config] with Has[SttpBackend[Task, Nothing, Nothing]], Nothing, AddressValidator] =
+    ZLayer.fromServices[Config, SttpBackend[Task, Nothing, Nothing], Service] { (c, backend) =>
       AddressValidatorLive(c, backend)
     }
 
@@ -47,7 +45,7 @@ object AddressValidator {
 
 }
 
-case class AddressValidatorLive(config: AddressValidator.Config, backend: SttpBackend[Task, Nothing, WebSocketHandler])
+case class AddressValidatorLive(config: AddressValidator.Config, backend: SttpBackend[Task, Nothing, Nothing])
     extends AddressValidator.Service
     with StatusCodes {
   override def checkAddress(address: UnvalidatedAddress): IO[AddressValidationError, CheckedAddress] = {

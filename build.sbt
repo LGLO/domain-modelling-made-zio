@@ -4,12 +4,15 @@ version := "0.0.1"
 // scalaVersion := "0.23.0-RC1"
 scalaVersion in ThisBuild := "2.13.1"
 
+resolvers +=
+  "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
+
 addCommandAlias("fix", "; all compile:scalafix test:scalafix")
 
 scalafmtOnCompile := true
 
 val ZioVersion = "1.0.0-RC18-2"
-val ZioLoggingVersion = "0.2.7"
+val ZioLoggingVersion = "0.2.8"
 val Http4sVersion = "0.21.3"
 val CirceVersion = "0.13.0"
 val Specs2Version = "4.9.3"
